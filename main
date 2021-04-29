@@ -1,0 +1,28 @@
+import sys
+
+from unuseclass import analyzeBinary
+from linkmap import analyzeLinkMap, SymbolModel
+
+if __name__ == '__main__':
+
+    address_name_list = []
+    un_use_name_array = []
+    un_use_address_array = []
+    s = SymbolModel()
+
+    un_use_address_array = analyzeBinary(sys.argv[:2])
+    # analyzeBinary(sys.argv[:2])
+    #[('1', 1), ('2', 2), ('3', 3)]
+
+    # s.file = 'zzz'
+    # s.size = 10
+    # s.address = '1'
+    address_name_list = analyzeLinkMap(sys.argv[2:])
+    # [s]
+
+    print("********** 未使用的类如下 *********")
+    for (address, name) in un_use_address_array:
+        for s in address_name_list:
+            if str(address).lower() in str(s.address).lower():
+                un_use_name_array.append((s.address, s.size, s.file))
+                print(s.address, s.size, s.file)
