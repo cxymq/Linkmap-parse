@@ -104,6 +104,10 @@ def readUsedClass(path):
 	file = os.popen('otool -v -s __DATA	__objc_classrefs %s' % (path))
 	return file
 
+def readAllMethods(path):
+	file = os.popen('otool -v -s __DATA	__objc_selrefs %s' % (path))
+	return file
+
 def readClassName(path):
 	file = os.popen('otool -o %s' % (path))
 
@@ -119,8 +123,8 @@ def readClassName(path):
 def analyzeBinary(args):
 	print("********** 二进制文件 正在开始解析*********")
 	address_name_array = []
-	if checkAppBinary(args[1]):
-		path = args[1]
+	if checkAppBinary(args[0]):
+		path = args[0]
 
 		allClassFile = readAllClass(path)
 		allClass = findAllClass(allClassFile)

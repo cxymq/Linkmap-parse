@@ -1,28 +1,76 @@
 import sys
+import PySimpleGUI as sg
 
 from unuseclass import analyzeBinary
-from linkmap import analyzeLinkMap, SymbolModel
+from linkmap import analyzeLinkMap, analyzeLinkMap2, SymbolModel
 
-if __name__ == '__main__':
+# 窗口控件
+layout = [
+    [sg.Text('选择二进制文件')],
+    [sg.Input(key="-BINARY-"), sg.FileBrowse()],
+    [sg.Text('选择 LinkMap text')],
+    [sg.Input(key='-LINK MAP-'), sg.FileBrowse()],
+    [sg.Button('查看内存占用', key='-CLASS MEMORY-'), sg.Checkbox(text='分组解析', key='-GROUP ANALYESE-'), sg.Input(key='-GROUP MODULE-', size=(20, 10)), sg.Text('大于'), sg.Input(key='-MEMORY LIMIT-', size=(10, 10)), sg.Text('K'), sg.Button('开始分析无用类', key='-START ANALYSE-')],
+    [sg.Listbox(
+        values=[], key='-CLASS MEMORY LIST-', size=(50, 45), font=12
+    ), sg.Listbox(
+        values=[], key='-UNUSE CLASS LIST-', size=(100, 45), font=12
+    )]
+]
 
+window = sg.Window('LinkMap 和二进制文件分析', layout)
+
+def startAnalyse(args):
     address_name_list = []
     un_use_name_array = []
     un_use_address_array = []
     s = SymbolModel()
 
-    un_use_address_array = analyzeBinary(sys.argv[:2])
+    if len(args[:1]) > 0:
+        un_use_address_array = analyzeBinary(args[:1])
     # analyzeBinary(sys.argv[:2])
-    #[('1', 1), ('2', 2), ('3', 3)]
+    # [('1', 1), ('2', 2), ('3', 3)]
 
     # s.file = 'zzz'
     # s.size = 10
     # s.address = '1'
-    address_name_list = analyzeLinkMap(sys.argv[2:])
+    if len(args[1:]) > 0:
+        address_name_list = analyzeLinkMap(args[1:])
     # [s]
 
-    print("********** 未使用的类如下 *********")
-    for (address, name) in un_use_address_array:
-        for s in address_name_list:
-            if str(address).lower() in str(s.address).lower():
-                un_use_name_array.append((s.address, s.size, s.file))
-                print(s.address, s.size, s.file)
+    if len(un_use_address_array) > 0:
+        print("********** 未使用的类如下 *********")
+        for (address, name) in un_use_address_array:
+            for s in address_name_list:
+                if str(address).lower() in str(s.address).lower():
+                    file_name = s.file.split('/')
+                    un_use_name_array.append((s.address, s.size, file_name[-1]))
+                    print(s.address, s.size, s.file)
+        return un_use_name_array
+    else:
+        return address_name_list
+
+while True:
+    event, values = window.Read()
+    is_group_analyse = values['-GROUP ANALYESE-']
+    group_module = values['-GROUP MODULE-']
+    memory_limit = values['-MEMORY LIMIT-']
+    if event == sg.WIN_CLOSED:
+        break
+    if event == '-CLASS MEMORY-':
+        params = [values['-LINK MAP-']]
+        if 'True' == str(is_group_analyse):
+            params.append('-g')
+        if len(group_module) > 0:
+            params.append(group_module)
+        if len(memory_limit) > 0:
+            params.append(memory_limit)
+        result = analyzeLinkMap2(params)
+        if 0 == int(result[0]):
+            sg.popup_auto_close(result[1], title='提示', line_width=45)
+        else:
+            window['-CLASS MEMORY LIST-'].update(result[1])
+    elif event == '-START ANALYSE-':
+        window['-UNUSE CLASS LIST-'].update(startAnalyse([values['-BINARY-'], values['-LINK MAP-']]))
+
+window.close()

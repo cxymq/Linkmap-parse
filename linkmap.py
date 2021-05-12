@@ -96,16 +96,20 @@ def symbolMapFromContent(path):
 def sortSymbol(symbolList):
      return sorted(symbolList, key=lambda s: s.size,reverse = True)
 
-def buildResultWithSymbols(symbols):
+def buildResultWithSymbols(symbols, args):
     results = ["文件大小\t文件名称\r\n"]
     totalSize = 0
+    memory_limit = 0
+    if args ==0 or len(args) > 0:
+        memory_limit = float(args)
     for symbol in symbols:
-        results.append(calSymbol(symbol))
-        totalSize += symbol.size
+        if (symbol.size/1024.0) > memory_limit:
+            results.append(calSymbol(symbol))
+            totalSize += symbol.size
     results.append("总大小: %.2fM" % (totalSize/1024.0/1024.0))
     return results
 
-def buildCombinationResultWithSymbols(symbols):
+def buildCombinationResultWithSymbols(symbols, args):
     #统计不同模块大小
     results = ["库大小\t库名称\r\n"]
     totalSize = 0
@@ -129,11 +133,17 @@ def buildCombinationResultWithSymbols(symbols):
             combinationMap[symbol.file] = symbol
     sortedSymbols = sortSymbol(combinationMap.values())
 
+    search_module = ''
+    memory_limit = 0
+    if len(args) > 1:
+        search_module = args[1]
+    if len(args) > 2:
+        memory_limit = float(args[2])
+
     for symbol in sortedSymbols:
-        if symbol.size > THRESHOLD_SIZE:
+        if len(search_module) > 0 and search_module in symbol.file and (symbol.size/1024.0) > memory_limit:
             results.append(calSymbol(symbol))
             totalSize += symbol.size
-        
     results.append("总大小: %.2fM" % (totalSize/1024.0/1024.0))
 
     return results
@@ -172,6 +182,22 @@ def analyzeLinkMap(args):
         print("***********打印 linkmap ***********")
         return  symbolList
 
-
+def analyzeLinkMap2(args):
+    if verify_linkmapfile(args[0]) == True:
+        print("********** linkmap 正在开始解析*********")
+        symbolDic = symbolMapFromContent(args[0])
+        symbolList = sortSymbol(symbolDic.values())
+        if len(args) >= 2 and args[1] == "-g":
+            results = buildCombinationResultWithSymbols(symbolList, args[1:])
+        else:
+            if len(args) >= 2:
+                results = buildResultWithSymbols(symbolList, args[1])
+            else:
+                results = buildResultWithSymbols(symbolList, 0)
+        for result in results:
+            print(result)
+        return [1, results]
+    else:
+        return [0, '输入link map文件非法']
 # if __name__ == "__main__":
 #     analyzeLinkMap()
