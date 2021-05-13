@@ -73,9 +73,14 @@ while True:
         else:
             window['-CLASS MEMORY LIST-'].update(result[1])
     elif event == '-START ANALYSE-':
-        binary_path = values['-BINARY-'] + '/MissEvanApp'
-        if len(binary_path) > 0:
-            window['-UNUSE CLASS LIST-'].update(startAnalyse([binary_path]))
+        app_path = values['-BINARY-']
+        app_path_num = app_path.split('/')
+        if len(app_path_num) > 0:
+            app_name = app_path_num[-1]
+            app_name_num = app_name.split('.')
+            if len(app_name_num) > 1 and app_name_num[1] == 'app':
+                binary_path = app_path + '/' + app_name_num[0]
+                window['-UNUSE CLASS LIST-'].update(startAnalyse([binary_path]))
         else:
             sg.popup_auto_close('无效的二进制路径', title='提示', line_width=45)
 

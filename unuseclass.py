@@ -145,7 +145,7 @@ def analyzeBinary(args):
 		allClass = findAllClass(allClassFile)
 
 		print(f'All class size:{len(allClass)}')
-		address_name_array.append('All class size:{len(allClass)}')
+		address_name_array.append('All class size:%d' % (len(allClass)))
 
 		usedClassFile = readUsedClass(path)
 		usedClass = findAllClass(usedClassFile)
