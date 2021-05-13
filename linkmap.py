@@ -1,11 +1,5 @@
 #!usr/bin/python
 ## -*- coding: UTF-8 -*-
-#
-#使用简介：python linkmap.py XXX-LinkMap-normal-xxxarch.txt 或者 python linkmap.py XXX-LinkMap-normal-xxxarch.txt -g
-#使用参数-g会统计每个模块.o的统计大小
-#
-__author__ = "zmjios"
-__date__ = "2016-07-27"
 
 import os
 import re

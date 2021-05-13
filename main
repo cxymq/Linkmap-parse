@@ -14,41 +14,43 @@ layout = [
     [sg.Listbox(
         values=[], key='-CLASS MEMORY LIST-', size=(50, 45), font=12
     ), sg.Listbox(
-        values=[], key='-UNUSE CLASS LIST-', size=(100, 45), font=12
+        values=[], key='-UNUSE CLASS LIST-', size=(50, 45), font=12
     )]
 ]
 
 window = sg.Window('LinkMap 和二进制文件分析', layout)
 
 def startAnalyse(args):
-    address_name_list = []
+    # address_name_list = []
     un_use_name_array = []
     un_use_address_array = []
     s = SymbolModel()
 
-    if len(args[:1]) > 0:
-        un_use_address_array = analyzeBinary(args[:1])
+    if len(args) > 0:
+        un_use_address_array = analyzeBinary(args[0])
     # analyzeBinary(sys.argv[:2])
     # [('1', 1), ('2', 2), ('3', 3)]
 
     # s.file = 'zzz'
     # s.size = 10
     # s.address = '1'
-    if len(args[1:]) > 0:
-        address_name_list = analyzeLinkMap(args[1:])
+    # if len(args[1:]) > 0:
+    #     address_name_list = analyzeLinkMap(args[1:])
     # [s]
 
     if len(un_use_address_array) > 0:
         print("********** 未使用的类如下 *********")
-        for (address, name) in un_use_address_array:
-            for s in address_name_list:
-                if str(address).lower() in str(s.address).lower():
-                    file_name = s.file.split('/')
-                    un_use_name_array.append((s.address, s.size, file_name[-1]))
-                    print(s.address, s.size, s.file)
-        return un_use_name_array
-    else:
-        return address_name_list
+        # for (address, name) in un_use_address_array:
+        #     for s in address_name_list:
+        #         if str(address).lower() in str(s.address).lower():
+        #             file_name = s.file.split('/')
+        #             un_use_name_array.append((s.address, s.size, file_name[-1]))
+        #             print(s.address, s.size, s.file)
+        for name in un_use_address_array:
+            print(name)
+        return un_use_address_array
+    # else:
+    #     return address_name_list
 
 while True:
     event, values = window.Read()
@@ -71,6 +73,10 @@ while True:
         else:
             window['-CLASS MEMORY LIST-'].update(result[1])
     elif event == '-START ANALYSE-':
-        window['-UNUSE CLASS LIST-'].update(startAnalyse([values['-BINARY-'], values['-LINK MAP-']]))
+        binary_path = values['-BINARY-'] + '/MissEvanApp'
+        if len(binary_path) > 0:
+            window['-UNUSE CLASS LIST-'].update(startAnalyse([binary_path]))
+        else:
+            sg.popup_auto_close('无效的二进制路径', title='提示', line_width=45)
 
 window.close()

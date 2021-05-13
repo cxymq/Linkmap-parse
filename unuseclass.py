@@ -5,6 +5,7 @@
 #
 
 import os
+import re
 import sys
 
 
@@ -59,28 +60,42 @@ def findUsedClass(file):
 	return returnResult
 
 
-def findClassNameByAddress(addressArray,file):
+def findClassNameByAddress(addressArray, file):
 
 	# file = open(addressMap,'r')
-	addressNameArray = []
+	addressNameArray = ['未使用类如下（有误差，一定要人工筛选）：']
 
 	for address in addressArray:
-		file.seek(0)
-		find = False
-		for line in file.readlines():
-			if line.find(address) != -1:
-				find = True
-				continue
-			if find and line.find("name") != -1:
-				# print('binary: ', line)
-				lineArray = line.split(' ')
-				if len(lineArray) > 0:
-					name = lineArray[len(lineArray) - 1].replace('\n','')
-					print ("%s %s" %(address,name))
-					addressNameArray.append((address,name))
-				break
+		# file.seek(0)
+		# find = False
+		# for line in file.readlines():
+		# 	if line.find(address) != -1:
+		# 		find = True
+		# 		continue
+		# 	if find and line.find("name") != -1:
+		# 		# print('binary: ', line)
+		# 		lineArray = line.split(' ')
+		# 		if len(lineArray) > 0:
+		# 			name = lineArray[len(lineArray) - 1].replace('\n','')
+		# 			print ("%s %s" %(address,name))
+		# 			addressNameArray.append((address,name))
+		# 		break
+		if file.get(address):
+			file_name = file[address]
+			addressNameArray.append(file_name)
 	return addressNameArray
 
+def class_symbols(path):
+  symbols = {}
+  #class symbol format from nm: 0000000103113f68 (__DATA,__objc_data) external _OBJC_CLASS_$_EpisodeStatusDetailItemView
+  re_class_name = re.compile('(\w{16}) .* _OBJC_CLASS_\$_(.+)')
+  lines = os.popen('nm -nm %s' % path).readlines()
+  for line in lines:
+    result = re_class_name.findall(line)
+    if result:
+      (address, symbol) = result[0]
+      symbols[address[8:]] = symbol
+  return symbols
 
 def checkAppBinary(argv):
 	if len(argv) < 2:
@@ -123,26 +138,30 @@ def readClassName(path):
 def analyzeBinary(args):
 	print("********** 二进制文件 正在开始解析*********")
 	address_name_array = []
-	if checkAppBinary(args[0]):
-		path = args[0]
+	if checkAppBinary(args):
+		path = args
 
 		allClassFile = readAllClass(path)
 		allClass = findAllClass(allClassFile)
 
 		print(f'All class size:{len(allClass)}')
+		address_name_array.append('All class size:{len(allClass)}')
 
 		usedClassFile = readUsedClass(path)
 		usedClass = findAllClass(usedClassFile)
 
 		print ('Used class size:%d' % (len(usedClass)))
+		address_name_array.append('Used class size:%d' % (len(usedClass)))
 
 		unUsedClass = list(set(allClass).difference(set(usedClass)))
 
 		print ('Unused class size:%d' % (len(unUsedClass)))
+		address_name_array.append('Unused class size:%d' % (len(unUsedClass)))
 
 		if len(unUsedClass) > 0:
-			classNameFile = readClassName(path)
-			address_name_array = findClassNameByAddress(unUsedClass,classNameFile)
+			# classNameFile = readClassName(path)
+			classNameFile = class_symbols(path)
+			address_name_array.extend(findClassNameByAddress(unUsedClass, classNameFile))
 
 	#Clean map file
 	mapPath = os.path.abspath('map.txt')
