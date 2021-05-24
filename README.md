@@ -7,9 +7,15 @@
 ### 2.1 准备工作
 #### 1.首先运行工程，得到 XXXApp 二进制和 XXXApp-LinkMap-normal-arm64.txt 文件（即是 linkmap 文件）。(此文基于 6s 真机，最好是真机，因为下面的脚本基于 arm64 架构，不然得自己改下，[旺柴])
 
-XXX-Appp 二进制路径：/Users/xxx_username/Library/Developer/Xcode/DerivedData/XXXApp-xxxxxxx/Build/Products/Debug-iphoneos/XXXApp
+XXX-Appp 二进制路径：
+`
+/Users/xxx_username/Library/Developer/Xcode/DerivedData/XXXApp-xxxxxxx/Build/Products/Debug-iphoneos/XXXApp
+`
 
-XXXApp-LinkMap-normal-arm64.txt 路径：/Users/xxx_username/Library/Developer/Xcode/DerivedData/XXXApp-xxxxxxx/Build/Intermediates.noindex/XXXApp.build/Debug-iphoneos/XXXApp.build/XXXApp-LinkMap-normal-arm64.txt
+XXXApp-LinkMap-normal-arm64.txt 路径：
+`
+/Users/xxx_username/Library/Developer/Xcode/DerivedData/XXXApp-xxxxxxx/Build/Intermediates.noindex/XXXApp.build/Debug-iphoneos/XXXApp.build/XXXApp-LinkMap-normal-arm64.txt
+`
 
 注意：xxx_username 是本机用户名，XXXApp-xxxxxxx 是工程编译之后生成的文件名
 
